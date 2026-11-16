@@ -19,17 +19,17 @@
   }
   function goalText(entry,lang,name=''){
     const value=clean(entry.text[lang]||entry.text.en);
-    if(lang==='ar')return 'خلال 12 شهراً، '+value;
+    if(lang==='ar')return 'خلال فترة التدريب، '+value;
     const writtenGoal=/^The child will\s+/i.test(value);
     let phrase=value.replace(/^The child will\s+/i,'').replace(/^The child\s+/i,'').replace(/^Will\s+/,'');
     const verbs={emits:'produce',tacts:'name',selects:'select',demonstrates:'demonstrate',has:'have',responds:'respond',completes:'complete',follows:'follow',imitates:'imitate',matches:'match',engages:'engage',draws:'draw',writes:'write',reads:'read',counts:'count',mands:'request',identifies:'identify',copies:'copy',traces:'trace',sits:'sit',works:'work',acquires:'acquire',places:'place',stacks:'stack',grasps:'grasp',attends:'attend',performs:'perform',uses:'use',repeats:'repeat',searches:'search',generalizes:'generalize',takes:'take',transitions:'transition',answers:'answer',discriminates:'discriminate',spells:'spell',combines:'combine',says:'say',points:'point',touches:'touch',orients:'orient',looks:'look',turns:'turn',manipulates:'manipulate',shows:'show',tracks:'track',initiates:'initiate',vocalizes:'vocalize',provides:'provide',sorts:'sort',echoes:'echo',puts:'put',allows:'allow',accepts:'accept',adjusts:'adjust',approaches:'approach',arranges:'arrange',asks:'ask',assembles:'assemble',assists:'assist',attempts:'attempt',brings:'bring',carries:'carry',chases:'chase',colors:'color',comes:'come',connects:'connect',constructs:'construct',continues:'continue',cooperates:'cooperate',describes:'describe',distinguishes:'distinguish',does:'do',drops:'drop',dumps:'dump',enjoys:'enjoy',enters:'enter',focuses:'focus',gets:'get',gives:'give',glances:'glance',goes:'go',helps:'help',holds:'hold',improvises:'improvise',indicates:'indicate',interrupts:'interrupt',joins:'join',keeps:'keep',kicks:'kick',laughs:'laugh',leads:'lead',learns:'learn',lines:'line',maintains:'maintain',makes:'make',meets:'meet',moves:'move',narrates:'narrate',navigates:'navigate',negotiates:'negotiate',nests:'nest',nods:'nod',observes:'observe',offers:'offer',opens:'open',participates:'participate',plays:'play',pretends:'pretend',pulls:'pull',pushes:'push',raises:'raise',reaches:'reach',reacts:'react',recalls:'recall',recites:'recite',scores:'score',scribbles:'scribble',seeks:'seek',sets:'set',sings:'sing',smiles:'smile',speaks:'speak',splashes:'splash',stays:'stay',strings:'string',suggests:'suggest',summarizes:'summarize',transfers:'transfer',waits:'wait'};
     if(!writtenGoal){
       const match=phrase.match(/^((?:(?:spontaneously|independently|visually|correctly|appropriately|consistently|politely|legibly|repeatedly|successfully|intraverbally|verbally|rote)\s+)*)([a-z]+)(.*)$/i);
-      if(!match||!verbs[match[2].toLowerCase()])return `Within 12 months: ${value}`;
+      if(!match||!verbs[match[2].toLowerCase()])return `During the training period: ${value}`;
       phrase=match[1].toLowerCase()+verbs[match[2].toLowerCase()]+match[3];
     }
     phrase=phrase.charAt(0).toLowerCase()+phrase.slice(1);
-    return `Within 12 months, ${name.trim()||'the child'} will ${phrase}`;
+    return `During the training period, ${name.trim()||'the child'} will ${phrase}`;
   }
   function itemFor(s,D,entry){
     const all=M.allMilestones(D);

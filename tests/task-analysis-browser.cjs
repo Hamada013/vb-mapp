@@ -24,7 +24,10 @@ server.listen(0,'127.0.0.1',async()=>{let browser;try{
  assert.equal(await page.locator('.analysis-chart .visit-current').count(),164);
  assert.equal(await page.locator('.analysis-chart tbody').count(),5);
  assert.deepEqual(await page.locator('.analysis-chart tbody').evaluateAll(nodes=>nodes.map(n=>n.dataset.analysisBand)),['5','4','3','2','1']);
- assert.deepEqual(await page.locator('.analysis-chart th').allTextContents(),['Mand1234','Tact1234','Listener Responding1234','VP/MTS1234','Independent Play1234','Social Behavior1234','Motor Imitation1234','Echoic1234','Spontaneous Vocal1234']);
+ assert.deepEqual(await page.locator('.analysis-chart th').evaluateAll(nodes=>nodes.map(n=>{const c=n.cloneNode(true);c.querySelector('.bulk-tasks')?.remove();return c.textContent;})),['Mand1234','Tact1234','Listener Responding1234','VP/MTS1234','Independent Play1234','Social Behavior1234','Motor Imitation1234','Echoic1234','Spontaneous Vocal1234']);
+ // Bulk marking: one domain at once, then clear it again.
+ await page.locator('.analysis-chart [data-bulk-tasks="1"][data-bulk-cat="Mand"]').click();assert.equal(await page.evaluate(()=>Object.entries(VBApp.snapshot().scores.tasks).filter(([id,v])=>id.startsWith('ta-m1-')&&v===1).length),await page.evaluate(()=>VB_DATA.tasks.filter(t=>t.level===1&&t.category==='Mand').length));
+ await page.locator('.analysis-chart [data-bulk-tasks="clear"][data-bulk-cat="Mand"]').click();assert.equal(await page.evaluate(()=>Object.keys(VBApp.snapshot().scores.tasks).length),0);
  assert.deepEqual(await page.locator('.analysis-chart tbody').first().locator('td').first().locator('[data-analysis-item]').evaluateAll(nodes=>nodes.map(n=>n.textContent.split('\n')[0].match(/5-[a-zM]/)[0])),['5-M','5-e','5-d','5-c','5-b','5-a']);
  assert.equal(await page.locator('.protocol-key tbody tr').count(),4);await fits();
  assert.equal(await page.locator('[data-analysis-item="m1-1"] .visit-current').evaluate(n=>n.style.getPropertyValue('--score-fill')),'50%');

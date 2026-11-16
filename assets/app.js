@@ -42,6 +42,7 @@
   function translateShell() {
     document.documentElement.lang = s.lang; document.documentElement.dir = s.lang === 'ar' ? 'rtl' : 'ltr';
     document.querySelectorAll('[data-en][data-ar]').forEach(node => node.textContent = node.dataset[s.lang]);
+    document.querySelectorAll('[data-placeholder-en]').forEach(node => { node.placeholder = s.lang === 'ar' ? node.dataset.placeholderAr : node.dataset.placeholderEn; });
     $('language').textContent = s.lang === 'ar' ? 'English' : 'العربية';
     $('language').setAttribute('aria-label', tr('Switch to Arabic', 'التبديل إلى الإنجليزية'));
     $('navigation').setAttribute('aria-label', tr('Assessment sections', 'أقسام التقييم'));
@@ -74,6 +75,16 @@
     return `<div class="score-controls" role="group" aria-label="${esc(tr('Score', 'الدرجة') + ' ' + item.id)}">${values.map(v => `<button type="button" data-score="${v}" data-type="${type}" data-id="${item.id}" aria-pressed="${M.hasScore(s, type, item) && s.scores[type][item.id] === v}" ${!M.eligible(item, s) ? 'disabled' : ''}>${v}</button>`).join('')}<button type="button" class="score-clear" data-clear-score="${item.id}" data-type="${type}">${tr('Clear / not assessed', 'إلغاء / غير مقيم')}</button></div>`;
   }
   function noteField(item, prefix='', compact=false) { return `<details><summary>${compact?tr('Note','ملاحظة'):tr('Response, prompts and evidence', 'الاستجابة والتلميحات والأدلة')}</summary><label class="sr-only" for="note-${prefix}${item.id}">${tr('Item note', 'ملاحظة البند')}</label><textarea class="compact" id="note-${prefix}${item.id}" data-bind="comment" data-key="${item.id}" dir="auto">${esc(s.comments[item.id] || '')}</textarea></details>`; }
+  function gameButton(item) { if (!window.VBGames?.has(item.id) || s.completedAt) return ''; const m = window.VBGames.meta(item.id); return `<button type="button" data-game="${item.id}">${window.VBIcon(m.icon)} ${tr(m.en, m.ar)}</button>`; }
+  // A finished (or stopped) game scores the milestone with its own criteria; the assessor can still change it.
+  function gameResult(id, r) {
+    const item = getItem('milestones', id); if (!item || s.completedAt) throw Error('Unavailable');
+    M.setScore(s, 'milestones', item, r.score);
+    const m = window.VBGames.meta(id), line = `[${tr(m.en, m.ar)}] ${M.today()}: ${r.summary || `${r.correct}/${r.attempts} ${tr('correct','صحيحة')}`} → ${r.score === .5 ? '½' : r.score}${r.detail ? ' · ' + r.detail : ''}${r.complete ? '' : ' · ' + tr('incomplete','غير مكتملة')}`;
+    s.comments[id] = s.comments[id] ? s.comments[id] + '\n' + line : line;
+    refreshScores('milestones', id);
+    document.querySelectorAll(`[data-key="${id}"][data-bind="comment"]`).forEach(node => { node.value = s.comments[id]; });
+  }
   function stimulusButton(item) { return window.VB_STIMULI[item.id] && !window.VB_STIMULI[item.id].assessorOnly ? `<button type="button" data-stimulus="${item.id}">${tr('Show child image', 'عرض صورة للطفل')}</button>` : ''; }
   function pendingResult(type, item) {
     return M.own(s.scores[type], item.id) && !M.hasScore(s, type, item) ? `<p class="review-note" data-pending-score="${item.id}">${tr('Previous recorded result', 'النتيجة المسجلة سابقاً')}: <b dir="ltr">${s.scores[type][item.id]}</b>. ${tr('Preserved for review; excluded from scores and current goals until re-scored under valid criteria.', 'محفوظة للمراجعة؛ لا تدخل في الدرجات والأهداف الحالية حتى إعادة التسجيل وفق معايير صالحة.')}</p>` : '';
@@ -118,7 +129,7 @@
       ${type === 'milestones' && item.original ? `<p class="muted">${tr('Current task', 'المهمة الحالية')}</p>` : ''}<p class="${type === 'eesa' ? 'eesa-stimulus' : 'card-text'}" dir="auto">${esc(M.itemText(item, s, s.lang))}</p>${type === 'eesa' ? `<p class="muted" dir="ltr">${esc(item.text.en)}</p>` : ''}${M.needsCriteria(item) ? milestoneSource : ''}${criterion}
       ${type !== 'milestones' && review && !M.hasScore(s, type, item) ? `<p class="review-note">${esc(review[s.lang])}</p>` : ''}
       ${earlierResult(type, item)}${previous}${scoreControls(type, item)}<p class="score-label">${tr('Blank means not assessed; zero is a recorded result.', 'الفراغ يعني غير مقيم؛ الصفر نتيجة مسجلة.')}</p>
-      ${stimulus ? `<div class="toolbar">${stimulusButton(item)}</div><details><summary>${tr('Stimulus preparation', 'تجهيز المثير')}</summary><p>${esc(stimulus.originalTask && !['li2-6'].includes(item.id) ? tr('Prepare images or materials for the current task using the arrays and trials specified in your guide.', 'جهّز الصور أو المواد للمهمة الحالية وفق المصفوفات والمحاولات المحددة في دليلك.') : stimulus.instruction[s.lang])}</p>${stimulus.prepared?`<p>${esc(text(stimulus.pictureNote||window.VB_PICTURE_DATA.support))}</p><p class="muted">${stimulus.boards.length} ${tr('prepared pages; use only the applicable trials.', 'صفحة جاهزة؛ استخدم المحاولات المناسبة للبند فقط.')}</p>`:''}</details>` : ''}
+      ${!stimulus && gameButton(item) ? `<div class="toolbar">${gameButton(item)}</div>` : ''}${stimulus ? `<div class="toolbar">${stimulusButton(item)}${gameButton(item)}</div><details><summary>${tr('Stimulus preparation', 'تجهيز المثير')}</summary><p>${esc(stimulus.originalTask && !['li2-6'].includes(item.id) ? tr('Prepare images or materials for the current task using the arrays and trials specified in your guide.', 'جهّز الصور أو المواد للمهمة الحالية وفق المصفوفات والمحاولات المحددة في دليلك.') : stimulus.instruction[s.lang])}</p>${stimulus.prepared?`<p>${esc(text(stimulus.pictureNote||window.VB_PICTURE_DATA.support))}</p><p class="muted">${stimulus.boards.length} ${tr('prepared pages; use only the applicable trials.', 'صفحة جاهزة؛ استخدم المحاولات المناسبة للبند فقط.')}</p>`:''}</details>` : ''}
       ${!M.needsCriteria(item) ? milestoneSource : ''}${type === 'milestones' ? `<p class="small scoring-zero">${tr('0: Neither the full nor half-point criterion was demonstrated. Leave blank if not assessed.', '0: لم يتحقق معيار النقطة الكاملة أو نصف النقطة. اتركه فارغاً إذا لم يُقيّم.')}</p>` : ''}${guidance ? `<details ${inDialog ? 'open' : ''}><summary>${tr('Objective, administration and criteria', 'الهدف وطريقة التطبيق والمعايير')}</summary><div class="reference-text">${content(guidance)}</div></details>` : ''}${original}${noteField(item)}</article>`;
   }
   function casePage() {
@@ -220,9 +231,15 @@
     $('barrierNotesBody').innerHTML=(type==='transitions'?window.VB_TRANSITIONS:window.VB_BARRIERS).notes.map(n=>`<section><h3>${esc(text(n.title))}</h3><p>${esc(text(n.text))}</p></section>`).join('');
     $('barrierNotesClose').setAttribute('aria-label',tr('Close','إغلاق'));openDialog('barrierNotesDialog');
   }
+  function derivedNote(item) {
+    const p=M.transitionProgress(s,item),source=item.derivedFrom==='milestones'?tr('milestones','المعالم'):tr('barriers','العوائق'),count=`<bdi dir="ltr">${p.assessed}/${p.total}</bdi>`;
+    if(p.mode==='manual')return `<p class="derived-score-note" data-derived-mode="manual">${tr('Entered manually.','أُدخلت يدوياً.')} <button type="button" class="score-clear" data-restore-transition="${item.id}">${tr('Restore automatic score','استعادة الحساب التلقائي')}</button></p>`;
+    if(!p.assessed)return `<p class="derived-score-note" data-derived-mode="auto">${tr(`Calculated automatically from the ${source} total once scoring starts, or choose a score by hand.`,`تُحسب تلقائياً من مجموع ${source} عند بدء التسجيل، أو اختر درجة يدوياً.`)}</p>`;
+    return `<p class="derived-score-note" data-derived-mode="auto">${tr('Automatic','تلقائي')}: ${tr(`${source} total`,`مجموع ${source}`)} <bdi dir="ltr">${p.score}</bdi> · ${count} ${tr('scored','مقيّم')}${p.complete?'':` · <strong>${tr('provisional until all are scored','مؤقتة حتى اكتمال التقييم')}</strong>`}. ${tr('Choosing a score overrides it.','اختيار درجة يدوياً يلغي الحساب التلقائي.')}</p>`;
+  }
   function transitionCard(item) {
     const setup=M.needsCriteria(item)?`<details class="transition-verify"><summary>${tr('Verify protocol criteria','التحقق من معايير البروتوكول')}</summary>${field(item.id,'Item description','وصف البند',s.customCriteria[item.id]?.text||text(item.name),'textarea','criterionText')}${field(item.id,'Verified Protocol criteria (1–5)','معايير البروتوكول المتحقق منها (1–5)',s.customCriteria[item.id]?.scoring||'','textarea','criterionScoring')}</details>`:'';
-    return `<article class="assessment-card transition-task protocol-assessment-item" data-card-id="${item.id}"><header class="protocol-item-head"><h3><bdi dir="${s.lang==='ar'?'rtl':'ltr'}">${item.id.split('-').pop()}.</bdi> ${esc(text(item.name))}</h3>${fourScores('transitions',[item],{item})}</header><div class="protocol-item-body">${formPrevious('transitions',item)}${pendingResult('transitions',item)}<div class="transition-guidance">${item.guidance.map(g=>`<p class="transition-score-row" data-transition-score="${esc(g.label.en)}"><strong>${esc(text(g.label))}.</strong><span>${esc(text(g.text))}</span></p>`).join('')}</div>${setup}${item.derivedFrom?`<p class="derived-score-note">${tr('Calculated from this visit’s complete assessment.','تُحسب من التقييم المكتمل لهذه الزيارة.')}</p>`:scoreControls('transitions',item)}${noteField(item)}</div></article>`;
+    return `<article class="assessment-card transition-task protocol-assessment-item" data-card-id="${item.id}"><header class="protocol-item-head"><h3><bdi dir="${s.lang==='ar'?'rtl':'ltr'}">${item.id.split('-').pop()}.</bdi> ${esc(text(item.name))}</h3>${fourScores('transitions',[item],{item})}</header><div class="protocol-item-body">${formPrevious('transitions',item)}${pendingResult('transitions',item)}<div class="transition-guidance">${item.guidance.map(g=>`<p class="transition-score-row" data-transition-score="${esc(g.label.en)}"><strong>${esc(text(g.label))}.</strong><span>${esc(text(g.text))}</span></p>`).join('')}</div>${setup}${item.derivedFrom?derivedNote(item):''}${scoreControls('transitions',item)}${noteField(item)}</div></article>`;
   }
   function transitionsPage() {
     const notesLabel=tr('Transition assessment notes','ملاحظات تقييم الانتقال');
@@ -245,6 +262,11 @@
   function analysisCard(item) {
     return `<article class="assessment-card analysis-card" data-card-id="${item.id}" style="${formLevelStyle(item.level)}"><h3>${esc(R.label(D,item.category,s.lang))} · <bdi>${item.code}</bdi></h3><p class="card-text" dir="auto">${esc(analysisText(item))}</p><p class="muted"><bdi>${esc(item.method)}</bdi> · ${tr('Source PDF page','صفحة المصدر')} <bdi>${item.sourcePage}</bdi></p>${s.lang==='ar'?`<details><summary>${tr('English wording','النص الإنجليزي')}</summary><p lang="en" dir="ltr">${esc(item.text.en)}</p></details>`:''}${fourScores('tasks',[item],{item})}${earlierResult('tasks',item)}${pendingResult('tasks',item)}${scoreControls('tasks',item)}<p class="small">${esc(text(item.scoring))}</p>${noteField(item,'',true)}</article>`;
   }
+  function bulkTasks(cat,milestone=0) {
+    const scope=milestone?`${R.label(D,cat,s.lang)} ${milestone}`:R.label(D,cat,s.lang),attr=`data-bulk-cat="${esc(cat)}"${milestone?` data-bulk-milestone="${milestone}"`:''}`;
+    const b=(v,glyph,en,ar)=>`<button type="button" class="bulk-task" data-bulk-tasks="${v}" ${attr} aria-label="${esc(tr(en+' · ',ar+' · ')+scope)}" title="${esc(tr(en,ar))}">${glyph}</button>`;
+    return `<span class="bulk-tasks" role="group" aria-label="${esc(tr('Mark all skills · ','تسجيل كل المهارات · ')+scope)}">${b(1,window.VBIcon('check'),'All met','الكل متحقق')}${b(0,window.VBIcon('x'),'All not met','الكل غير متحقق')}${b('clear',window.VBIcon('reset'),'Clear all','مسح الكل')}</span>`;
+  }
   function analysisTables() {
     const list=analysisItems(),cats=analysisCategories().filter(cat=>ui.analysisCategory==='all'||cat===ui.analysisCategory);
     return cats.map(cat=>{
@@ -252,9 +274,10 @@
         const milestone=analysisMilestone(cat,n),skills=list.filter(i=>i.category===cat&&i.milestone===n),showMilestone=milestone&&(skills.length||analysisMatchesMilestone(milestone));
         if(!skills.length&&!showMilestone)return '';
         const row=(type,item)=>`<tr class="protocol-task-row ${type==='milestones'?'analysis-linked':''}" data-analysis-item="${item.id}"><th scope="row"><bdi>${type==='milestones'?n+'-M':item.code}</bdi></th><td class="analysis-description"><button type="button" class="protocol-task-text" ${type==='milestones'?`data-edit="${item.id}"`:`data-task-edit="${item.id}"`}>${esc(type==='milestones'?M.itemText(item,s,s.lang):analysisText(item))}${type==='tasks'?` <small dir="ltr">(${esc(item.method)})</small>`:''}</button></td><td class="analysis-met">${fourScores(type,[item],{item})}</td></tr>`;
-        return `<tbody class="analysis-skill-group">${skills.map(i=>row('tasks',i)).join('')}${showMilestone?row('milestones',milestone):''}</tbody>`;
+        const bulk=skills.length>1?`<tr class="analysis-bulk-row"><td colspan="3">${bulkTasks(cat,n)}</td></tr>`:'';
+        return `<tbody class="analysis-skill-group">${bulk}${skills.map(i=>row('tasks',i)).join('')}${showMilestone?row('milestones',milestone):''}</tbody>`;
       }).join('');
-      return groups?`<section class="analysis-domain"><table class="analysis-table"><colgroup><col class="analysis-code-col"><col><col class="analysis-met-col"></colgroup><thead><tr><th scope="col">${tr('Skill','المهارة')}</th><th scope="col"><h3>${esc(R.label(D,cat,s.lang))} · ${tr('Level','المستوى')} ${ui.analysisLevel}</h3></th><th scope="col">${tr('Met','متحقق')}</th></tr></thead>${groups}</table></section>`:'';
+      return groups?`<section class="analysis-domain"><table class="analysis-table"><colgroup><col class="analysis-code-col"><col><col class="analysis-met-col"></colgroup><thead><tr><th scope="col">${tr('Skill','المهارة')}</th><th scope="col"><h3>${esc(R.label(D,cat,s.lang))} · ${tr('Level','المستوى')} ${ui.analysisLevel}</h3>${list.some(i=>i.category===cat)?bulkTasks(cat):''}</th><th scope="col">${tr('Met','متحقق')}</th></tr></thead>${groups}</table></section>`:'';
     }).join('')||`<p>${tr('No matching items.','لا توجد بنود مطابقة.')}</p>`;
   }
   function analysisGrid() {
@@ -279,7 +302,7 @@
       return columns.some(c=>c!=='<td></td>')?`<tbody data-analysis-band="${n}"><tr>${columns.join('')}</tr></tbody>`:'';
     }).join('');
     if(!bands)return `<p>${tr('No matching items.','لا توجد بنود مطابقة.')}</p>`;
-    return `<div class="analysis-chart-scroll" role="region" aria-label="${tr('Task Analysis tracking chart','جدول تتبع تحليل المهام')}" tabindex="0"><table class="analysis-chart" dir="ltr" style="--analysis-columns:${cats.length}"><caption class="sr-only">${tr('Task Analysis and Skills Tracking · Level ','تحليل المهام وتتبع المهارات · المستوى ')}${ui.analysisLevel}</caption><thead><tr>${cats.map(cat=>`<th scope="col" dir="auto">${esc(R.label(D,cat,s.lang))}<span class="analysis-chart-visit-key" dir="ltr">${Array.from({length:4},(_,i)=>`<span>${esc(visits[i]?.number||i+1)}</span>`).join('')}</span></th>`).join('')}</tr></thead>${bands}</table></div>`;
+    return `<div class="analysis-chart-scroll" role="region" aria-label="${tr('Task Analysis tracking chart','جدول تتبع تحليل المهام')}" tabindex="0"><table class="analysis-chart" dir="ltr" style="--analysis-columns:${cats.length}"><caption class="sr-only">${tr('Task Analysis and Skills Tracking · Level ','تحليل المهام وتتبع المهارات · المستوى ')}${ui.analysisLevel}</caption><thead><tr>${cats.map(cat=>`<th scope="col" dir="auto">${esc(R.label(D,cat,s.lang))}${list.some(i=>i.category===cat)?bulkTasks(cat):''}<span class="analysis-chart-visit-key" dir="ltr">${Array.from({length:4},(_,i)=>`<span>${esc(visits[i]?.number||i+1)}</span>`).join('')}</span></th>`).join('')}</tr></thead>${bands}</table></div>`;
   }
   function analysisTaskForms() { return analysisTables(); }
   function analysisContent() { return ui.analysisView==='grid'?analysisGrid():analysisTaskForms(); }
@@ -462,6 +485,7 @@
     if (type === 'eesa' && ui.page==='eesa') { const scrollY=window.scrollY,active=document.activeElement,restore=active?.closest('#main')?{id:active.dataset.id,score:active.dataset.score}:null; $('main').innerHTML=eesaForm(); if(restore?.id&&restore.score!==undefined) document.querySelector(`.eesa-form-item [data-id="${restore.id}"][data-score="${restore.score}"]`)?.focus({preventScroll:true}); window.scrollTo(0,scrollY); }
     if (type === 'eesa') document.querySelectorAll('[data-eesa-group-summary]').forEach(node => { node.textContent = M.stats(s, D.eesa.filter(item => item.group === ui.group), 'eesa').score; });
     document.querySelectorAll(`[data-four-item="${id}"][data-four-type="${type}"]`).forEach(node=>{ node.outerHTML=fourScores(type,[item],{item}); });
+    for(const derived of D.transitions.filter(i=>i.derivedFrom))document.querySelectorAll(`[data-card-id="${derived.id}"] .derived-score-note`).forEach(node=>{node.outerHTML=derivedNote(derived);});
     if (type==='transitions' && $('transitionGrid')) $('transitionGrid').innerHTML=barrierGrid('transitions');
     if (type==='barriers' && $('barrierGrid')) $('barrierGrid').innerHTML=barrierGrid();
     document.querySelectorAll('[data-header-type]').forEach(node=>{const t=node.dataset.headerType,title=node.querySelector('h2').textContent;node.outerHTML=formHeading(esc(title),t,getList(t));});
@@ -502,6 +526,7 @@
   document.addEventListener('click', async event => {
     const button = event.target.closest('button'); if (!button || button.disabled) return;
     const a = button.dataset;
+    if(a.restoreTransition&&!s.completedAt){M.restoreTransition(s,D,a.restoreTransition);save();refreshScores('transitions',a.restoreTransition);return;}
     if(a.reportDate){reportDate=a.reportDate;render();document.querySelector(`[data-report-date="${reportDate}"]`)?.focus();return;}
     if(a.assessmentAction){button.focus();askLifecycle(a.assessmentAction);return;}
     if('confirmAssessment' in a){
@@ -546,7 +571,15 @@
     if (a.eesaEdit) { button.focus(); showItem('eesa',a.eesaEdit); return; }
     if (a.edit) { button.focus(); editItem(a.edit); return; }
     if (a.score !== undefined) { try { M.setScore(s, a.type, getItem(a.type, a.id), Number(a.score)); if (a.type === 'eesa') M.syncEchoic(s, D); refreshScores(a.type, a.id); } catch (error) { status(tr('Add and verify this item’s criteria before scoring.', 'أضف معايير هذا البند وتحقق منها قبل التسجيل.')); } return; }
+    if (a.bulkTasks) {
+      // Mark every visible lettered skill of one domain (or one milestone group) at once.
+      const items=analysisItems().filter(i=>i.category===a.bulkCat&&(!a.bulkMilestone||i.milestone===Number(a.bulkMilestone)));if(!items.length)return;
+      for(const item of items){if(a.bulkTasks==='clear')M.clearScore(s,'tasks',item.id);else M.setScore(s,'tasks',item,Number(a.bulkTasks));}
+      refreshScores('tasks',items[0].id);status(tr(`${items.length} skills updated.`,`تم تحديث ${items.length} مهارة.`));
+      document.querySelector(`[data-bulk-tasks="${a.bulkTasks}"][data-bulk-cat="${a.bulkCat}"]${a.bulkMilestone?`[data-bulk-milestone="${a.bulkMilestone}"]`:':not([data-bulk-milestone])'}`)?.focus();return;
+    }
     if (a.clearScore) { M.clearScore(s, a.type, a.clearScore); if (a.type === 'eesa') M.syncEchoic(s, D); refreshScores(a.type, a.clearScore); return; }
+    if (a.game) { window.VBGames.open(a.game, result => gameResult(a.game, result)); return; }
     if (a.stimulus) { showImage(a.stimulus); return; }
     if (a.imageStep) { showImage(ui.imageId, ui.imageIndex + Number(a.imageStep)); return; }
     if(a.reportSectionLayout){s.reportLayouts[a.reportSectionLayout]=a.layout;render();document.querySelector(`[data-report-section-layout="${a.reportSectionLayout}"][data-layout="${a.layout}"]`)?.focus();save();return;}
@@ -593,6 +626,16 @@
   document.querySelectorAll('dialog').forEach(dialog => {
     dialog.addEventListener('cancel', event => { if (dialog.id === 'accountDialog') return; event.preventDefault(); closeDialog(dialog.id); });
     dialog.addEventListener('close', () => { if (!document.querySelector('dialog[open]')) document.body.classList.remove('modal-open'); });
+  });
+  // A tap that starts and ends on the backdrop of the top dialog behaves like Escape (each dialog's own cancel rules apply).
+  // Full-screen child activities opt out with data-no-outside-close.
+  const outside=(dialog,event)=>{const r=dialog.getBoundingClientRect();return event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom;};
+  let backdropStart=null;
+  document.addEventListener('pointerdown',event=>{const d=event.target;backdropStart=d instanceof HTMLDialogElement&&d.open&&outside(d,event)?d:null;},true);
+  // pointerup, not click: WebKit sends no click for a tap on a modal backdrop.
+  document.addEventListener('pointerup',event=>{
+    const dialog=event.target;if(!(dialog instanceof HTMLDialogElement)||!dialog.open||dialog!==backdropStart||dialog.hasAttribute('data-no-outside-close')||!outside(dialog,event))return;
+    backdropStart=null;const cancel=new Event('cancel',{cancelable:true});dialog.dispatchEvent(cancel);if(!cancel.defaultPrevented&&dialog.open)dialog.close();
   });
   document.addEventListener('keydown', event => {
     const dialog = [...document.querySelectorAll('dialog[open]')].pop(); if (!dialog || !dialog.classList.contains('fallback')) return;

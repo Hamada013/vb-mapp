@@ -143,8 +143,8 @@
     if(!item)return null;
     const p=build(s,D,{level:item.level}).profiles.find(p=>p.item?.id===id&&p.status==='draft');
     if(!p||s.goals[id])return null;
-    const ar=lang==='ar',year=ar?'خلال 12 شهراً، ':'Within 12 months, ';
-    return {selected:false,goal:year+M.itemText(p.item,s,lang),criterion:(ar?'الهدف المرحلي: ':'Short-term objective: ')+M.itemText(p.item,s,lang)+'\n'+(ar?'معيار البند: ':'Item criterion: ')+M.itemScoring(p.item,s,lang)+'\n'+(ar?'يحدد الفريق معيار إتقان الهدف السنوي وفرص القياس والتعميم بعد مراجعة خط الأساس.':'The team specifies annual mastery, measurement opportunities and generalization after reviewing baseline.'),support:p.guidance[lang]+'\n'+(ar?'مثال سنوي من المصدر للتكييف: ':'Source annual example to adapt: ')+p.annual[lang]+'\n'+formats[p.level][lang]+'\n'+p.notes.map(n=>n[lang]).join('\n')+'\n'+(ar?'خط الأساس: ':'Baseline: ')+id+' = '+s.scores.milestones[id]+' · '+s.date+'\n'+(ar?'المصدر: ':'Source: ')+p.ruleId+' @ '+p.source.revision,review:'',criteriaReview:''};
+    const ar=lang==='ar',year=ar?'خلال فترة التدريب، ':'During the training period, ';
+    return {selected:false,goal:year+M.itemText(p.item,s,lang),criterion:(ar?'الهدف المرحلي: ':'Short-term objective: ')+M.itemText(p.item,s,lang)+'\n'+(ar?'معيار البند: ':'Item criterion: ')+M.itemScoring(p.item,s,lang)+'\n'+(ar?'يحدد الفريق معيار إتقان الهدف خلال فترة التدريب وفرص القياس والتعميم بعد مراجعة خط الأساس.':'The team specifies mastery within the training period, measurement opportunities and generalization after reviewing baseline.'),support:p.guidance[lang]+'\n'+(ar?'مثال من المصدر للتكييف: ':'Source example to adapt: ')+p.annual[lang]+'\n'+formats[p.level][lang]+'\n'+p.notes.map(n=>n[lang]).join('\n')+'\n'+(ar?'خط الأساس: ':'Baseline: ')+id+' = '+s.scores.milestones[id]+' · '+s.date+'\n'+(ar?'المصدر: ':'Source: ')+p.ruleId+' @ '+p.source.revision,review:'',criteriaReview:''};
   }
   root.VBIEP={source:registry,sources,rules,curriculum,build,draft};
 })(typeof window!=='undefined'?window:globalThis);

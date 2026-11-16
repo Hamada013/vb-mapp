@@ -312,6 +312,8 @@ dialog.fallback[open] { position:fixed; z-index:1001; top:50%; left:50%; transfo
 /* Scored assessment boxes fill from the bottom using the visit's key color. */
 .four-scores td.score-filled { background:linear-gradient(to top,var(--visit-fill) 0%,var(--visit-fill) var(--score-fill),#fff var(--score-fill),#fff 100%); }
 .four-scores td.score-filled > button,.four-scores td.score-filled > span { background:transparent; }
+/* The level fill rises behind the number; keep the number legible over any fill height. */
+.four-scores td.score-filled[class] > button,.four-scores td.score-filled[class] > span { color:#14303c; font-weight:700; text-shadow:0 0 2px #fff,0 0 4px #fff,0 0 6px #fff; }
 .barrier-column .filled,.transition-grid .barrier-column .filled { background:var(--visit-fill,#a8cfc0); }
 
 .transition-guidance .transition-score-row { display:grid; grid-template-columns:22px minmax(0,1fr); gap:4px; margin:0 0 5px; align-items:start; }
@@ -442,7 +444,7 @@ dialog.fallback[open] { position:fixed; z-index:1001; top:50%; left:50%; transfo
 .report-detail-options { justify-content:flex-start!important; }
 .report-detail-options button { display:flex; align-items:center; gap:9px; font-size:14px; }
 .report-detail-options button::before { content:''; flex:0 0 16px; width:16px; height:16px; border:1px solid #a7b9ad; border-radius:5px; }
-.report-detail-options button[aria-pressed="true"]::before { content:'✓'; background:#36664a; color:white; border-color:#36664a; font-size:12px; line-height:16px; text-align:center; }
+.report-detail-options button[aria-pressed="true"]::before { content:''; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m5 12.5 4.5 4.5L19 7.5'/%3E%3C/svg%3E"); background-size:12px; background-position:center; background-repeat:no-repeat; background:#36664a; color:white; border-color:#36664a; font-size:12px; line-height:16px; text-align:center; }
 .report-preview { padding:0!important; border:0; border-radius:0; background:transparent; overflow-x:auto; max-width:100%; }
 .pdf-stage .pdf-page,.report-preview .pdf-page { position:relative; width:794px; min-width:794px; height:1122px; padding:45px 40px 60px; margin:0 auto 24px; border:0; border-radius:0; background:white; overflow:hidden; font:14px/1.7 Arial,sans-serif; color:#1c303c; }
 .report-preview .pdf-page { box-shadow:0 2px 12px #203d4210; }
@@ -682,3 +684,11 @@ summary { min-height:44px; } .eesa-form-guide > summary { padding:10px 4px; }
 }
 @media(max-width:600px) { .report-controls .report-section-choice:last-child { width:100%; justify-self:stretch; } }
 @media(max-width:360px) { .app-header { padding-inline:6px; gap:4px; } .brand img { display:none; } .brand h1 { font-size:17px; } .header-actions { gap:0; } .header-actions #language { padding:0 6px; } }
+
+/* Task Analysis: mark a whole domain or milestone group at once. */
+.bulk-tasks { display:inline-flex; gap:4px; margin-inline-start:8px; vertical-align:middle; }
+.bulk-tasks .bulk-task { min-width:36px; min-height:36px; padding:0 8px; border-radius:10px; font-size:15px; line-height:1; background:#fff; border:1px solid var(--form-line,#cfdde5); color:var(--form-accent,#246b86); }
+.analysis-chart th .bulk-tasks { display:flex; flex-wrap:wrap; justify-content:center; gap:3px; margin:4px 0; }
+.analysis-chart th .bulk-task { min-width:26px; min-height:26px; padding:0 4px; font-size:13px; border-radius:8px; }
+.analysis-bulk-row td { text-align:end; padding:4px 6px; background:var(--form-tint,#f6fafc); }
+.analysis-table thead h3 { display:inline; }

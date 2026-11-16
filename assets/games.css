@@ -1,0 +1,183 @@
+/* Touch mini-games: full-screen child overlay. */
+.game-dialog{touch-action:manipulation;--game-ink:#14303c;--game-brand:#246b86;--game-ok:#2e9d5b;--game-no:#d94766;width:100vw;height:var(--app-height,100dvh);max-width:none;max-height:none;margin:0;padding:0;border:0;background:#f4fafc;color:var(--game-ink);overflow:hidden;font-family:inherit}
+.game-dialog[open]{display:flex;flex-direction:column}
+.game-dialog::backdrop{background:#0b2530cc}
+.game-bar{flex:none;display:flex;align-items:center;gap:10px;padding:8px 12px;padding-top:max(8px,env(safe-area-inset-top));background:#fff;border-bottom:1px solid #dceaf4}
+.game-bar h2{flex:1;margin:0;font-size:17px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.game-close{flex:none;width:44px;height:44px;padding:0;border-radius:14px;font-size:26px;line-height:1;background:#fff;border:1px solid #dceaf4;color:var(--game-ink)}
+.game-progress{flex:none;font-size:15px;color:#4a6572}
+.game-prompt{flex:none;display:flex;align-items:center;justify-content:center;gap:10px;min-height:0;padding:0 12px;font-size:15px;color:#4a6572}
+.game-prompt:not(:empty){min-height:44px;padding:6px 12px}
+.game-say{font-weight:600}
+.game-replay{min-height:36px;padding:0 10px;border-radius:12px;background:#fff;border:1px solid #dceaf4;font-size:14px}
+.game-stage{flex:1;min-height:0;display:flex;flex-direction:column;gap:10px;padding:10px 12px;padding-bottom:max(12px,env(safe-area-inset-bottom))}
+.game-tile{position:relative;display:grid;place-items:center;padding:6px;border-radius:20px;background:#fff;border:2px solid #dceaf4;box-shadow:0 2px 6px #0b25300f;touch-action:manipulation;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+.game-tile img,.game-tile svg{width:100%;height:100%;object-fit:contain;pointer-events:none}
+.game-glyph{font-size:min(14vw,12vh);font-weight:800;line-height:1;color:var(--game-ink)}
+.game-word{font-size:min(5.5vw,4.5vh);overflow-wrap:anywhere;font-weight:800;line-height:1.2;color:var(--game-ink);text-align:center}
+.game-quantity{display:flex;flex-wrap:wrap;justify-content:center;align-content:center;gap:4%;width:100%;height:100%}
+.game-quantity img{width:var(--qw,44%);height:var(--qw,44%);object-fit:contain}
+.game-sample{flex:none;display:flex;justify-content:center}
+.game-sample .game-tile{width:min(30vw,22vh);height:min(30vw,22vh);border-color:var(--game-brand);border-width:3px}
+.game-sample .game-tile.wide{width:auto;min-width:min(30vw,22vh);max-width:90vw;padding:6px 24px}
+.game-sample .game-word{font-size:min(9vw,7vh);white-space:nowrap}
+.game-sequence{flex:none;display:flex;flex-wrap:wrap;justify-content:center;gap:8px}
+.game-tile.small{width:min(12vw,11vh);height:min(12vw,11vh);border-radius:14px;padding:4px}
+.game-blank{border-style:dashed;border-color:var(--game-brand);font-size:min(8vw,7vh);font-weight:800;color:var(--game-brand)}
+.game-array{position:relative;flex:1;min-height:0}
+.game-array .game-option{position:absolute;cursor:pointer;transition:transform .15s,border-color .15s,box-shadow .15s}
+.game-option:active{border-color:var(--game-brand)}
+.game-option.ok{border-color:var(--game-ok);box-shadow:0 0 0 6px #2e9d5b40;animation:game-pop .45s}
+.game-option.no{border-color:var(--game-no);animation:game-shake .4s}
+.game-star{position:absolute;inset-block-start:-14px;inset-inline-end:-10px;font-size:34px;animation:game-rise .8s ease-out forwards;pointer-events:none}
+@keyframes game-pop{50%{scale:1.12}}
+@keyframes game-shake{25%{translate:-6px}75%{translate:6px}}
+@keyframes game-rise{from{opacity:0;translate:0 10px}30%{opacity:1}to{opacity:0;translate:0 -30px}}
+.game-intro,.game-result{margin:auto;max-width:560px;display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center;font-size:17px;line-height:1.6}
+.game-criteria{margin:0;color:#4a6572}
+.game-hint{margin:0;font-size:14px;color:#4a6572}
+.game-options{display:flex;flex-wrap:wrap;justify-content:center;gap:8px}
+.game-options button{min-height:48px;padding:0 18px;border-radius:14px;background:#fff;border:1px solid #dceaf4;font-size:16px}
+.game-options button[aria-pressed=true]{background:var(--game-brand);border-color:var(--game-brand);color:#fff}
+.game-start{min-height:56px;min-width:180px;padding:0 28px;border-radius:18px;border:0;background:var(--game-brand);color:#fff;font-size:20px;font-weight:700}
+.game-trophy{font-size:72px;line-height:1}
+.game-score{margin:0;font-size:24px}
+.game-incomplete{margin:0;color:var(--game-no);font-weight:600}
+/* sorting */
+.game-pile{flex:1;min-height:0;display:flex;flex-wrap:wrap;align-content:center;justify-content:center;gap:10px;overflow:auto}
+.game-piece{width:min(16vw,13vh);height:min(16vw,13vh);cursor:grab;touch-action:none}
+.game-piece.selected{border-color:var(--game-brand);box-shadow:0 0 0 5px #246b8640;scale:1.06}
+.game-piece.dragging{z-index:5;cursor:grabbing;box-shadow:0 10px 24px #0b253040}
+.game-bins{flex:none;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(30vw,160px),1fr));gap:10px}
+.game-bins.free{grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.game-bin{display:flex;flex-direction:column;align-items:center;gap:6px;min-height:min(24vh,170px);padding:8px;border-radius:20px;background:#e8f2f6;border:2px dashed #9fc3d1}
+.game-model{width:min(12vw,9vh);height:min(12vw,9vh)}
+.game-model svg{width:100%;height:100%}
+.game-bin-items{display:flex;flex-wrap:wrap;justify-content:center;gap:4px}
+.game-bin .game-piece{width:min(9vw,7vh);height:min(9vw,7vh);padding:3px;border-radius:12px}
+.game-sort-actions{flex:none;display:flex;justify-content:center}
+.game-sort-actions .game-start{min-height:48px;font-size:17px}
+/* game launcher next to "show child image" */
+button[data-game]{display:inline-flex;align-items:center;gap:6px}
+@media (prefers-reduced-motion:reduce){.game-option.ok,.game-option.no,.game-star{animation:none}}
+/* ---- assessor bar (correct / not correct) ---- */
+.game-judge{flex:none;display:flex;justify-content:center;gap:12px}
+.game-judge button{flex:1;max-width:260px;min-height:56px;border-radius:18px;font-size:20px;font-weight:800;border:2px solid}
+.game-judge span{font-size:15px;font-weight:600}
+.judge-yes{background:#e8f6ee;border-color:var(--game-ok);color:#1d6b3d}
+.judge-no{background:#fdecef;border-color:var(--game-no);color:#9c2740}
+.judge-yes[aria-pressed=true]{background:var(--game-ok);color:#fff}
+/* ---- picture cards ---- */
+.deck-card{flex:1;min-height:0;display:grid;place-items:center}
+.deck-tile{width:min(60vw,52vh);height:min(60vw,52vh);border-width:3px}
+.game-tile.wide{width:auto;min-width:min(60vw,40vh);max-width:92vw;padding:16px 28px}
+.deck-tile .game-word{font-size:min(10vw,8vh);white-space:normal}
+.deck-tile .game-glyph{font-size:min(30vw,26vh)}
+/* ---- mand board ---- */
+.board-grid{flex:1;min-height:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(min(22vw,120px),1fr));gap:10px;align-content:center;overflow:auto}
+.board-item{aspect-ratio:1;cursor:pointer}
+.board-item.selected{border-color:var(--game-brand);box-shadow:0 0 0 5px #246b8640}
+.board-show{position:fixed;inset:0;display:grid;place-items:center;pointer-events:none;z-index:4}
+.board-show .game-tile{width:min(60vw,50vh);height:min(60vw,50vh);border-color:var(--game-ok);border-width:4px}
+.board-show.pop .game-tile{animation:game-pop .6s}
+/* ---- tracking and attention ---- */
+.track-area{position:relative;flex:1;min-height:0;overflow:hidden;border-radius:24px;background:radial-gradient(circle at 30% 30%,#fff,#e6f3f7)}
+.track-thing{position:absolute;left:0;top:0;border:0;box-shadow:none;background:transparent}
+.attend-scene{position:relative;flex:1;min-height:0;overflow:hidden;border-radius:24px;background:#fff}
+.attend-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;animation:attend-pan 24s ease-in-out infinite alternate}
+.attend-float{position:absolute;width:min(18vw,15vh);top:calc(12% + var(--i) * 18%);left:calc(8% + var(--i) * 21%);animation:attend-bob 3.2s ease-in-out calc(var(--i) * -.8s) infinite alternate}
+@keyframes attend-pan{from{transform:scale(1.05) translateX(-2%)}to{transform:scale(1.15) translateX(2%)}}
+@keyframes attend-bob{from{transform:translateY(-8px) rotate(-6deg)}to{transform:translateY(10px) rotate(6deg)}}
+/* ---- observation timer (assessor screen) ---- */
+.observe{margin:auto;width:min(100%,520px);display:flex;flex-direction:column;align-items:stretch;gap:14px;text-align:center}
+.observe-clock{font-size:min(16vw,64px);font-weight:800;font-variant-numeric:tabular-nums;color:var(--game-ink)}
+.observe-clock small{font-size:.4em;color:#4a6572;margin-inline-start:6px}
+.observe-buttons{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.observe-buttons:has(> :nth-child(2):last-child){grid-template-columns:1fr}
+.observe-btn{min-height:76px;border-radius:20px;border:0;background:var(--game-brand);color:#fff;font-size:24px;font-weight:800}
+.observe-btn.alt{background:#5f8796}
+.observe-btn.wide[aria-pressed=true]{background:var(--game-ok)}
+.observe-undo{grid-column:1/-1;min-height:44px;border-radius:14px;background:#fff;border:1px solid #dceaf4}
+.observe-stats{font-size:17px;color:#4a6572}
+.observe-level{font-size:20px;color:var(--game-ink)}
+.game-start.alt{background:#fff;color:var(--game-brand);border:2px solid var(--game-brand)}
+/* ---- counting out ---- */
+.count-pile{flex:1;min-height:0;display:flex;flex-wrap:wrap;justify-content:center;align-content:center;gap:10px}
+.count-item{width:min(16vw,13vh);height:min(16vw,13vh)}
+.count-basket{flex:none;display:flex;align-items:center;gap:10px;min-height:min(22vh,150px);padding:10px 14px;border-radius:24px;background:#fff6e6;border:3px dashed #e0b25c}
+.count-basket-label{font-size:42px}
+.count-in{flex:1;display:flex;flex-wrap:wrap;gap:8px}
+.count-in .count-item{width:min(12vw,10vh);height:min(12vw,10vh)}
+/* ---- comparisons ---- */
+.cmp-move{animation:cmp-drive linear infinite}
+@keyframes cmp-drive{from{transform:translateX(0)}to{transform:translateX(74px)}}
+/* ---- puzzles ---- */
+.puzzle-board{flex:none;aspect-ratio:4/3;display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(3,1fr);gap:6px;width:min(100%,calc((var(--app-height,100dvh) - 300px) * 4 / 3));margin:auto;padding:8px;border-radius:20px;background:#fff;border:2px solid #dceaf4}
+.puzzle-slot{display:grid}
+.puzzle-slot svg,.puzzle-piece svg{width:100%;height:100%}
+.puzzle-tray{flex:none;display:flex;flex-wrap:wrap;justify-content:center;gap:8px}
+.puzzle-piece{width:calc(min(11vw,9vh) * var(--w));height:calc(min(11vw,9vh) * var(--h));padding:3px;touch-action:none;cursor:grab}
+.puzzle-piece.selected{border-color:var(--game-brand);box-shadow:0 0 0 5px #246b8640}
+.puzzle-piece.dragging{z-index:5;box-shadow:0 10px 24px #0b253040}
+.puzzle-piece.no{animation:game-shake .4s}
+/* ---- tracing ---- */
+.trace-wrap{flex:1;min-height:0;display:flex}
+.trace-pad{flex:1;touch-action:none;background:#fff;border-radius:24px;border:2px solid #dceaf4}
+.trace-guide{fill:none;stroke:#9fc3d1;stroke-width:14;stroke-dasharray:2 14;stroke-linecap:round;stroke-linejoin:round}
+.trace-ink{fill:none;stroke:var(--game-brand);stroke-width:6;stroke-linecap:round;stroke-linejoin:round}
+/* ---- family photos ---- */
+.photo-manager{display:flex;flex-direction:column;gap:10px;width:100%}
+.photo-list{display:flex;flex-wrap:wrap;justify-content:center;gap:10px}
+.photo-list figure{position:relative;margin:0;width:96px;text-align:center}
+.photo-list img{width:96px;height:96px;object-fit:cover;border-radius:16px;border:2px solid #dceaf4}
+.photo-list figcaption{font-size:14px}
+.photo-list button{position:absolute;top:-6px;inset-inline-end:-6px;width:30px;height:30px;padding:0;border-radius:50%;background:#fff;border:1px solid #dceaf4}
+.photo-add{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.photo-add input[type=text]{min-height:48px;padding:0 12px;border-radius:14px;border:1px solid #dceaf4;font-size:16px}
+.photo-pick{display:inline-flex;align-items:center;justify-content:center;cursor:pointer;min-height:48px;font-size:17px}
+.game-extra{display:flex;align-items:center;gap:8px;font-size:15px}
+.game-extra input{width:72px;min-height:44px;border-radius:12px;border:1px solid #dceaf4;text-align:center;font-size:17px}
+@media (prefers-reduced-motion:reduce){.attend-bg,.attend-float,.cmp-move{animation:none}}
+
+/* tracking: continuous motion and the 2-second hold ring */
+.track-thing.swap{animation:game-pop .5s}
+.track-hold{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:8px;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+.track-hold svg{width:34px;height:34px;transform:rotate(-90deg)}
+.track-hold .ring-bg{fill:none;stroke:#2e9d5b33;stroke-width:4}
+.track-hold .ring{fill:none;stroke:var(--game-ok);stroke-width:4;stroke-dasharray:100;stroke-dashoffset:100;stroke-linecap:round}
+.track-hold.holding{background:#d4f0de}
+
+/* outline icons (icons.js) */
+.ico{width:1.15em;height:1.15em;flex:none;vertical-align:-.2em}
+.game-close .ico{width:22px;height:22px}
+.game-bar h2 .ico{width:22px;height:22px;color:var(--game-brand);margin-inline-end:4px}
+.game-say .ico,.game-replay .ico{width:20px;height:20px}
+.game-say{display:inline-flex;align-items:center;gap:6px}
+.game-replay{display:inline-flex;align-items:center;gap:4px}
+.game-count{display:inline-flex;align-items:center;gap:3px;color:var(--game-ok)}
+.game-start{display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.game-start .ico{width:22px;height:22px}
+.game-judge button{display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.game-judge .ico{width:26px;height:26px;stroke-width:2.4}
+.game-star{color:#f2b01e}
+.game-star .ico{width:34px;height:34px;fill:#ffd54f}
+.game-trophy .ico{width:76px;height:76px;stroke-width:1.4;color:var(--game-brand)}
+.observe-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.observe-btn .ico{width:28px;height:28px;stroke-width:2.4}
+.observe-undo{display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.count-basket-label .ico{width:44px;height:44px;color:#b98a2f}
+.photo-list button .ico{width:16px;height:16px}
+button[data-game] .ico{width:20px;height:20px}
+.bulk-tasks .bulk-task{display:inline-grid;place-items:center}
+.bulk-tasks .ico{width:18px;height:18px;stroke-width:2.2}
+/* Keep each game button's own colours: the app-wide button:hover (sticky after a tap on iPad) must not wash them out. */
+.game-dialog .game-start:hover{background:var(--game-brand);border-color:var(--game-brand)}
+.game-dialog .game-start.alt:hover{background:#fff;border-color:var(--game-brand)}
+.game-dialog .observe-btn:hover{background:var(--game-brand);border-color:transparent}
+.game-dialog .observe-btn.alt:hover{background:#5f8796}
+.game-dialog .observe-btn.wide[aria-pressed=true]:hover{background:var(--game-ok)}
+.game-dialog .judge-yes:hover{background:#e8f6ee;border-color:var(--game-ok)}
+.game-dialog .judge-yes.holding:hover,.game-dialog .judge-yes[aria-pressed=true]:hover{background:#d4f0de}
+.game-dialog .judge-no:hover{background:#fdecef;border-color:var(--game-no)}
+.game-dialog .game-tile:hover{background:#fff}
+.game-dialog .game-options button[aria-pressed=true]:hover{background:var(--game-brand);border-color:var(--game-brand)}

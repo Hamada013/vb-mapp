@@ -14,7 +14,7 @@
     return { version: 2, child: { name: '', dob: '', tester: '', language: '', guardian: '', reason: '', setting: '', relevant: '' },
       date: today(), completedAt: '', number: '1', color: '#246b86', lang: 'ar', reportLang: 'ar',
       scores: { milestones: {}, barriers: {}, transitions: {}, eesa: {}, tasks: {} },
-      comments: {}, clinical: '', recommendations: '', goals: {}, iepExcluded: [], customCriteria: {}, scoreReviews: {}, echoicModes: {},
+      comments: {}, clinical: '', recommendations: '', goals: {}, iepExcluded: [], customCriteria: {}, scoreReviews: {}, echoicModes: {}, transitionModes: {},
       reportScope: { milestones: true, barriers: true, transitions: true, eesa: true, tasks: true, goals: true },
       includeUnassessed: false, reportDetails: false, reportLayout:'tables', reportLayouts: {}, migration: '', legacy: null,
       assessmentId: newId(), caseId: newId(), baselineId: '', history: [], importSource: '' };
@@ -39,13 +39,16 @@
     }
     for (const [key, value] of Object.entries(raw.comments || {})) if (typeof value === 'string') s.comments[key] = value;
     for (const [id, value] of Object.entries(raw.customCriteria || {})) if (value && typeof value === 'object') s.customCriteria[id] = { text: safeText(value.text), scoring: safeText(value.scoring) };
-    for (const [id, value] of Object.entries(raw.goals || {})) if (value && typeof value === 'object') s.goals[id] = { selected: value.selected === true, goal: safeText(value.goal), criterion: safeText(value.criterion), review: safeText(value.review), support: safeText(value.support), criteriaReview: safeText(value.criteriaReview), itemId:safeText(value.itemId), bankId:safeText(value.bankId), sourceId:safeText(value.sourceId) };
+    for (const [id, value] of Object.entries(raw.goals || {})) if (value && typeof value === 'object') s.goals[id] = { selected: value.selected === true, goal: trainingPeriod(safeText(value.goal)), criterion: safeText(value.criterion), review: safeText(value.review), support: safeText(value.support), criteriaReview: safeText(value.criteriaReview), itemId:safeText(value.itemId), bankId:safeText(value.bankId), sourceId:safeText(value.sourceId) };
     for (const [id, value] of Object.entries(raw.scoreReviews || {})) if (typeof value === 'string') s.scoreReviews[id] = value;
+    for (const [id, mode] of Object.entries(raw.transitionModes || {})) if (/^tr-[12]$/.test(id) && ['auto','manual'].includes(mode)) s.transitionModes[id] = mode;
     for (const [id, mode] of Object.entries(raw.echoicModes || {})) if (/^e(?:1-[1-5]|2-(?:[6-9]|10))$/.test(id) && ['auto','manual'].includes(mode)) s.echoicModes[id] = mode;
     s.iepExcluded=Array.isArray(raw.iepExcluded)?[...new Set(raw.iepExcluded.filter(id=>typeof id==='string'))]:[];
     s.includeUnassessed = raw.includeUnassessed === true; s.reportDetails = raw.reportDetails === true; s.legacy = raw.legacy && typeof raw.legacy === 'object' ? raw.legacy : null;
     return s;
   }
+  // Goals are framed for the training period, not a fixed 12 months; earlier drafts are reworded on load.
+  function trainingPeriod(goal) { return goal.replace(/^خلال 12 شهراً، /,'خلال فترة التدريب، ').replace(/^Within 12 months([,:]) /,'During the training period$1 '); }
   function snapshot(raw) { const copy = normalizeRecord(raw); delete copy.history; delete copy.baselineId; return copy; }
   function normalize(raw) {
     const s = normalizeRecord(raw), ids = new Set();
@@ -116,9 +119,9 @@
   }
   function taskGuidance(item) { return item.guide || milestoneGuidance(item); }
   function needsCriteria(item) { return Boolean(item.missing || item.requiresCriteria); }
-  function eligible(item, s) { if(item.derivedFrom){const st=stats(s,item.derivedItems,item.derivedFrom);return st.total>0&&st.assessed===st.total;} return !needsCriteria(item) || Boolean(s.customCriteria[item.id]?.text.trim() && s.customCriteria[item.id]?.scoring.trim()); }
+  function eligible(item, s) { if(item.derivedFrom) return true; return !needsCriteria(item) || Boolean(s.customCriteria[item.id]?.text.trim() && s.customCriteria[item.id]?.scoring.trim()); }
   function reviewKey(item, s) {
-    if(item.derivedFrom){const st=stats(s,item.derivedItems,item.derivedFrom);return JSON.stringify(['transition-totals-v1',item.derivedFrom,st.assessed,st.score]);}
+    if(item.derivedFrom){if(transitionMode(s,item.id)==='manual')return 'transition-manual-v1';const st=stats(s,item.derivedItems,item.derivedFrom);return JSON.stringify(['transition-totals-v1',item.derivedFrom,st.assessed,st.score]);}
     if (item.manualRevision) return JSON.stringify(needsCriteria(item) ? [item.manualRevision, item.scoring.en, s.customCriteria[item.id]?.text || '', s.customCriteria[item.id]?.scoring || ''] : [item.manualRevision, item.scoring.en]);
     if (!needsCriteria(item)) return '';
     const criterion = s.customCriteria[item.id] || {};
@@ -161,10 +164,11 @@
   function setScore(s, type, item, value) {
     if (!validScore(type, item, value) || !eligible(item, s)) throw Error('Invalid score for item');
     if (type === 'milestones' && /^e(?:1-[1-5]|2-(?:[6-9]|10))$/.test(item.id)) { s.echoicModes ||= {}; s.echoicModes[item.id] = 'manual'; }
+    if (type === 'transitions' && item.derivedFrom) { s.transitionModes ||= {}; s.transitionModes[item.id] = 'manual'; }
     s.scores[type][item.id] = value;
     if (reviewKey(item, s)) s.scoreReviews[item.id] = reviewKey(item, s);
   }
-  function clearScore(s, type, id) { if (type === 'milestones' && /^e(?:1-[1-5]|2-(?:[6-9]|10))$/.test(id)) { s.echoicModes ||= {}; s.echoicModes[id] = 'manual'; } delete s.scores[type][id]; delete s.scoreReviews[id]; }
+  function clearScore(s, type, id) { if (type === 'milestones' && /^e(?:1-[1-5]|2-(?:[6-9]|10))$/.test(id)) { s.echoicModes ||= {}; s.echoicModes[id] = 'manual'; } if (type === 'transitions' && /^tr-[12]$/.test(id)) { s.transitionModes ||= {}; s.transitionModes[id] = 'manual'; } delete s.scores[type][id]; delete s.scoreReviews[id]; }
   // Only the current visit is synchronized. A manual score (including blank)
   // stays manual until the assessor explicitly restores its EESA link.
   function syncEchoic(s, data) {
@@ -194,10 +198,16 @@
     }
     return { total, group1, group2, group45, complete };
   }
+  // Transition 1–2 follow the visit's milestone/barrier totals as they are scored
+  // (provisional until every source item is scored) unless the assessor overrides them.
+  function transitionMode(s,id){ return s.transitionModes?.[id]==='manual'?'manual':'auto'; }
+  function transitionProgress(s,item){ const st=stats(s,item.derivedItems,item.derivedFrom); return {assessed:st.assessed,total:st.total,score:st.score,complete:st.total>0&&st.assessed===st.total,mode:transitionMode(s,item.id)}; }
+  function restoreTransition(s,data,id){ s.transitionModes ||= {}; s.transitionModes[id]='auto'; syncTransitionTotals(s,data); }
   function syncTransitionTotals(s,data) {
     for(const item of data.transitions.filter(i=>i.derivedFrom)){
+      if(transitionMode(s,item.id)==='manual')continue;
       const st=stats(s,item.derivedItems,item.derivedFrom);
-      if(st.total===0||st.assessed!==st.total)continue;
+      if(st.assessed===0){delete s.scores.transitions[item.id];delete s.scoreReviews[item.id];continue;}
       const value=item.derivedFrom==='milestones' ? st.score<=25?1:st.score<=50?2:st.score<=100?3:st.score<=135?4:5
         : st.score>=56?1:st.score>=31?2:st.score>=21?3:st.score>=11?4:5;
       s.scores.transitions[item.id]=value;s.scoreReviews[item.id]=reviewKey(item,s);
@@ -247,5 +257,5 @@
     if (b.getDate() < a.getDate()) months--;
     return months;
   }
-  return { syncEchoic, syncTransitionTotals, restoreEchoic, own, today, blank, normalize, snapshot, previous, startFollowup, comparison, progress, migrate, allMilestones, records, milestoneGuidance, taskGuidance, stats, goals, suggestedActions, itemText, itemScoring, halfAllowed, needsCriteria, eligible, reviewKey, currentPlan, validScore, hasScore, setScore, clearScore, ageOn, allowed, validColor };
+  return { syncEchoic, syncTransitionTotals, restoreTransition, transitionProgress, restoreEchoic, own, today, blank, normalize, snapshot, previous, startFollowup, comparison, progress, migrate, allMilestones, records, milestoneGuidance, taskGuidance, stats, goals, suggestedActions, itemText, itemScoring, halfAllowed, needsCriteria, eligible, reviewKey, currentPlan, validScore, hasScore, setScore, clearScore, ageOn, allowed, validColor };
 });

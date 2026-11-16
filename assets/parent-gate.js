@@ -44,7 +44,7 @@
             const button=document.createElement('button');button.type='button';button.dataset.answer=value;button.textContent=value;
             button.onclick=()=>{
                 if(value===expected)finish(true);
-                else {dialog.querySelector('[role=status]').textContent=tr('Try again','جرّبوا مرة تانية 🌱');button.setAttribute('aria-invalid','true');}
+                else {dialog.querySelector('[role=status]').textContent=tr('Try again','جرّبوا مرة تانية');button.setAttribute('aria-invalid','true');}
             };choices.append(button);
         });
         pending = new Promise(resolve => { resolvePending = resolve; });

@@ -19,9 +19,6 @@ html[data-suite-input="pointer"] :is(h1,h2,h3,dialog):focus{outline:none!importa
 
 /* Saved children share one searchable avatar grid in the three account pickers. */
 .suite-account-browser{display:block!important;width:100%;margin:16px 0;min-width:0;direction:rtl}
-.suite-account-admins{display:grid;gap:8px;margin-bottom:12px}
-.suite-account-browser .suite-account-admin{display:flex;align-items:center;gap:8px;padding:8px 12px;border:1px solid #dceaf4;border-radius:18px;background:#f6fafc;min-width:0}
-.suite-account-browser .suite-account-admin>.suite-account-select{flex:1;align-items:flex-start;padding:6px;min-height:44px;text-align:start}
 .suite-account-filters{display:flex;gap:10px;margin:16px 0;min-width:0;position:relative;z-index:2}
 .suite-account-browser .suite-account-filters :is(.suite-account-search,.suite-account-sort){box-sizing:border-box;min-width:0;min-height:48px;width:auto;height:48px;margin:0;border:1px solid #dceaf4;border-radius:14px;padding:10px 14px;background:#fff;color:#22445a;font:14px/1.5 system-ui,-apple-system,Segoe UI,Tahoma,Arial,sans-serif;box-shadow:none;transition:border-color .15s,background-color .15s}
 .suite-account-browser .suite-account-filters .suite-account-search{flex:1;width:50%;padding-inline-start:40px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%235c7285' stroke-width='1.7' stroke-linecap='round'%3E%3Ccircle cx='10.5' cy='10.5' r='6.5'/%3E%3Cpath d='m16 16 4 4'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 13px center;background-size:19px}
@@ -91,3 +88,43 @@ html[data-suite-input="pointer"] :is(h1,h2,h3,dialog):focus{outline:none!importa
 
 #accountDialog{width:560px;max-width:calc(100vw - 32px);border:1px solid #dceaf4;border-radius:28px;padding:22px;color:#22445a;background:white}#accountForm{display:flex;flex-wrap:wrap;align-items:end;gap:10px}#accountForm label{flex:1 1 180px}#accountForm input{width:100%}#accountError,#deleteAccountError{color:#a43c38}#accounts{width:44px;min-height:44px;padding:10px;border-radius:14px;background:white}#accounts svg{width:24px;height:24px}#accountDialog::backdrop{background:#22445a33;backdrop-filter:blur(6px)}
 @media print{#accountDialog,#parent-gate,#deleteAccountDialog{display:none!important}}
+
+/* Child accounts window (2026-11-15): plain white, one add row, one filter row, one tidy list. */
+#accountDialog{box-sizing:border-box;width:520px;max-width:calc(100vw - 24px);max-height:calc(var(--app-height,100dvh) - 24px);padding:0;border:1px solid #e3ebf0;border-radius:24px;background:#fff;color:#22445a;box-shadow:0 24px 70px #0b253026;overflow:auto}
+#accountDialog::backdrop{background:#0b253033}
+#accountDialog .account-head{position:sticky;top:0;z-index:3;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px 20px 12px;background:#fff;border-bottom:1px solid #eef3f6}
+#accountDialog .account-head h2{margin:0;font-size:20px;font-weight:800}
+#closeAccounts{display:grid;place-items:center;width:40px;height:40px;min-height:40px;padding:0;border:0;border-radius:12px;background:#f3f7f9;color:#4a6572;font-size:22px;line-height:1}
+#accountForm.account-add{display:block;margin:0;padding:16px 20px 4px}
+#accountForm.account-add label{display:block;margin:0 0 6px;font-size:13px;font-weight:600;color:#5c7285}
+.account-add-row{display:flex;gap:8px}
+#accountForm #accountName{flex:1;min-width:0;height:48px;margin:0;padding:0 14px;border:1px solid #d7e3ea;border-radius:14px;background:#fff;font-size:16px;box-shadow:none}
+#accountForm #accountName:focus{outline:none;border-color:#246b86;box-shadow:0 0 0 3px #246b8622}
+#accountForm button[type=submit]{flex:none;height:48px;min-height:48px;padding:0 18px;border:0;border-radius:14px;background:#246b86;color:#fff;font-weight:700;white-space:nowrap}
+#accountError{margin:4px 20px 0;min-height:0;font-size:13px;color:#a43c38}
+#accountError:empty{display:none}
+#accountDialog .suite-account-browser{margin:0;padding:8px 20px 20px}
+#accountDialog .suite-account-filters{margin:8px 0 10px;gap:8px}
+#accountDialog .suite-account-browser .suite-account-filters :is(.suite-account-search,.suite-account-sort){height:42px;min-height:42px;border-color:#e3ebf0;border-radius:12px;background-color:#f8fafb;font-size:14px}
+#accountDialog .suite-account-sort-wrap{flex:0 0 150px}
+#accountDialog .suite-account-browser .suite-account-filters .suite-account-sort{background:#f8fafb;border-color:#e3ebf0}
+.suite-account-count{margin:4px 2px 6px;font-size:12px;font-weight:600;color:#7a8e9b}
+.suite-account-count:empty{display:none}
+#accountDialog .suite-account-grid{display:flex;flex-direction:column;gap:0;border:1px solid #eef3f6;border-radius:16px;overflow:hidden}
+#accountDialog .suite-account-grid .suite-account-row{flex-direction:row;align-items:center;gap:4px;padding:6px 8px 6px 6px;border:0;border-bottom:1px solid #eef3f6;border-radius:0;background:#fff}
+#accountDialog .suite-account-grid .suite-account-row:last-child{border-bottom:0}
+#accountDialog .suite-account-grid .suite-account-row.is-current{background:#f2f8fa}
+#accountDialog .suite-account-browser .suite-account-select{flex-direction:row!important;align-items:center;gap:12px;flex:1;min-width:0;padding:6px;border-radius:12px;text-align:start}
+#accountDialog .suite-account-browser .suite-account-select:hover{background:#f6f9fb!important}
+#accountDialog .suite-account-avatar{width:48px;height:48px;margin:0;padding:0;border-radius:50%;box-shadow:none}
+#accountDialog .suite-account-avatar svg{width:100%;height:100%}
+#accountDialog .suite-account-browser .suite-account-select[aria-pressed=true]>.suite-account-avatar{box-shadow:0 0 0 2.5px #246b86}
+.suite-account-text{flex:1;display:flex;flex-direction:column;align-items:flex-start;gap:2px;min-width:0;text-align:start}
+#accountDialog .suite-account-name{font-size:16px;font-weight:700;color:#22445a}
+.suite-account-meta{font-size:12px;color:#7a8e9b}
+.is-current .suite-account-meta{color:#246b86;font-weight:600}
+#accountDialog .suite-account-grid .suite-account-tools{margin:0}
+#accountDialog .suite-account-browser .suite-account-tools>.suite-delete{width:40px;height:40px;min-width:40px;min-height:40px;padding:9px;border-radius:12px;color:#9aa9b3}
+#accountDialog .suite-account-browser .suite-account-tools>.suite-delete:hover{background:#fdf1f0;color:#b65e57}
+#accountDialog .suite-account-empty{margin:0;padding:18px;text-align:center}
+@media(max-width:480px){#accountDialog .suite-account-filters{flex-direction:row}#accountDialog .suite-account-sort-wrap{flex:0 0 128px;width:auto}#accountDialog .suite-account-browser .suite-account-filters :is(.suite-account-search,.suite-account-sort){width:auto}}

@@ -5,7 +5,7 @@
   "scripts": {
     "build": "node scripts/build-pwa.cjs",
     "build:icons": "node scripts/build-icons.cjs",
-    "test": "node tests/model.cjs && node tests/accounts.cjs && node tests/task-analysis.cjs && node tests/iep.cjs && node tests/goal-bank.cjs",
+    "test": "node tests/model.cjs && node tests/accounts.cjs && node tests/task-analysis.cjs && node tests/iep.cjs && node tests/goal-bank.cjs && node tests/games.cjs",
     "test:browser": "node tests/accounts-browser.cjs",
     "test:barriers": "node tests/barriers-browser.cjs",
     "test:transitions": "node tests/transitions-browser.cjs",
@@ -17,7 +17,11 @@
     "test:navigation": "node tests/navigation-browser.cjs",
     "build:stimuli": "node scripts/build-stimuli.cjs",
     "test:stimuli": "node tests/stimuli.cjs",
-    "test:stimuli:browser": "node tests/stimuli-browser.cjs"
+    "test:stimuli:browser": "node tests/stimuli-browser.cjs",
+    "test:dialogs": "node tests/dialogs-browser.cjs",
+    "build:sounds": "node scripts/build-sound-script.cjs",
+    "test:games": "node tests/games-browser.cjs",
+    "build:sounds:pdf": "node scripts/build-sound-pdf.cjs"
   },
   "devDependencies": {
     "playwright": "1.56.1"

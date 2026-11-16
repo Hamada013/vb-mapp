@@ -20,9 +20,20 @@ for(const item of D.barriers){
 // Transition summaries preserve Protocol gaps rather than inventing conversion bands.
 assert.equal(D.transitions.length,18);
 const transitionState=M.blank();
+{ // Transition 1–2: live provisional totals, manual override, restore.
+ const t=M.blank(),tr1=D.transitions.find(i=>i.id==='tr-1'),tr2=D.transitions.find(i=>i.id==='tr-2');
+ M.syncTransitionTotals(t,D);assert.equal(M.own(t.scores.transitions,'tr-1'),false);
+ for(const item of tr1.derivedItems.slice(0,30))M.setScore(t,'milestones',item,1);M.syncTransitionTotals(t,D);
+ assert.equal(t.scores.transitions['tr-1'],2);assert.ok(M.hasScore(t,'transitions',tr1));assert.equal(M.transitionProgress(t,tr1).complete,false);
+ M.setScore(t,'barriers',tr2.derivedItems[0],4);M.syncTransitionTotals(t,D);assert.equal(t.scores.transitions['tr-2'],5);
+ M.setScore(t,'transitions',tr1,4);for(const item of tr1.derivedItems.slice(30,90))M.setScore(t,'milestones',item,1);M.syncTransitionTotals(t,D);
+ assert.equal(t.scores.transitions['tr-1'],4);assert.ok(M.hasScore(t,'transitions',tr1));assert.equal(M.transitionProgress(t,tr1).mode,'manual');
+ assert.equal(M.normalize(JSON.parse(JSON.stringify(t))).transitionModes['tr-1'],'manual');
+ M.restoreTransition(t,D,'tr-1');assert.equal(t.scores.transitions['tr-1'],3);assert.equal(M.transitionProgress(t,tr1).mode,'auto');
+}
 for(const item of D.transitions){
  assert.ok(item.guidance.length);
- if(item.derivedFrom){assert.equal(M.eligible(item,transitionState),false);continue;}
+ if(item.derivedFrom){assert.equal(M.eligible(item,transitionState),true);continue;}
  for(const entry of item.guidance)for(const lang of ['en','ar'])assert.ok(entry.text[lang].trim());
  assert.equal(item.guidance.length,5);
  assert.equal(M.needsCriteria(item),false);
@@ -44,7 +55,7 @@ for(const item of M.allMilestones(D))M.setScore(autoState,'milestones',item,1);
 for(const item of D.barriers)M.setScore(autoState,'barriers',item,4);
 M.syncTransitionTotals(autoState,D);assert.equal(autoState.scores.transitions['tr-1'],5);assert.equal(autoState.scores.transitions['tr-2'],1);
 M.clearScore(autoState,'milestones',M.allMilestones(D)[0].id);
-M.syncTransitionTotals(autoState,D);assert.equal(M.hasScore(autoState,'transitions',D.transitions[0]),false);
+M.syncTransitionTotals(autoState,D);assert.equal(M.hasScore(autoState,'transitions',D.transitions[0]),true);assert.equal(M.transitionProgress(autoState,D.transitions[0]).complete,false);
 assert.equal(JSON.stringify(autoState.history),histBefore);
 assert.deepEqual(Object.keys(M.normalize(autoState).scores.transitions).sort(),['tr-1','tr-2']);
 for(const [total,expected]of [[0,1],[25,1],[25.5,2],[50,2],[50.5,3],[100,3],[100.5,4],[135,4],[135.5,5],[170,5]]){

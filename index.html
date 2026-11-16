@@ -15,6 +15,7 @@
   <title>VB-MAPP · Ahmad Ghanem</title>
   <link rel="stylesheet" href="assets/styles.css">
   <link rel="stylesheet" href="assets/account-ui.css">
+  <link rel="stylesheet" href="assets/games.css">
 </head>
 <body>
   <a class="skip-link" href="#main" data-en="Skip to assessment" data-ar="الانتقال إلى التقييم">الانتقال إلى التقييم</a>
@@ -41,9 +42,10 @@
   <dialog id="importDialog" aria-labelledby="importTitle"><div class="dialog-header"><h2 id="importTitle" data-en="Review previous assessment" data-ar="مراجعة التقييم السابق">مراجعة التقييم السابق</h2><button type="button" data-close="importDialog" data-en="Cancel" data-ar="إلغاء">إلغاء</button></div><div id="importBody"></div></dialog>
   <p id="appStatus" class="app-status" role="status" aria-live="polite"></p>
   <dialog id="installDialog" aria-labelledby="installTitle"><div class="dialog-header"><h2 id="installTitle">VB-MAPP</h2><button type="button" data-install-close data-aria-en="Close" data-aria-ar="إغلاق" aria-label="إغلاق">×</button></div><p data-install-help></p><p data-install-status role="status" aria-live="polite"></p></dialog>
-  <dialog id="accountDialog" aria-labelledby="accountTitle"><div class="dialog-header"><h2 id="accountTitle" data-en="Child accounts" data-ar="حسابات الأطفال">حسابات الأطفال</h2><button type="button" id="closeAccounts" data-aria-en="Close" data-aria-ar="إغلاق" aria-label="إغلاق">×</button></div><form id="accountForm"><label for="accountName"><span data-en="Child name" data-ar="اسم الطفل">اسم الطفل</span><input id="accountName" name="childName" required maxlength="100" autocomplete="off" dir="auto"></label><button type="submit" data-en="Open / add" data-ar="دخول / إضافة">دخول / إضافة</button></form><p id="accountError" role="alert"></p><div id="accountList" class="suite-account-browser"></div></dialog>
+  <dialog id="accountDialog" aria-labelledby="accountTitle"><div class="account-head"><h2 id="accountTitle" data-en="Child accounts" data-ar="حسابات الأطفال">حسابات الأطفال</h2><button type="button" id="closeAccounts" data-aria-en="Close" data-aria-ar="إغلاق" aria-label="إغلاق">×</button></div><form id="accountForm" class="account-add"><label for="accountName" data-en="Open or add a child" data-ar="فتح أو إضافة طفل">فتح أو إضافة طفل</label><div class="account-add-row"><input id="accountName" name="childName" required maxlength="100" autocomplete="off" dir="auto" data-placeholder-en="Child’s name" data-placeholder-ar="اسم الطفل" placeholder="اسم الطفل"><button type="submit" data-en="Open / add" data-ar="دخول / إضافة">دخول / إضافة</button></div></form><p id="accountError" role="alert"></p><div id="accountList" class="suite-account-browser"></div></dialog>
   <dialog id="deleteAccountDialog" aria-labelledby="deleteAccountTitle"><h2 id="deleteAccountTitle" data-en="Delete account?" data-ar="حذف الحساب؟">حذف الحساب؟</h2><p><span data-en="Delete the account of" data-ar="حذف حساب">حذف حساب</span> «<bdi id="deleteAccountName"></bdi>» <span data-en="with its assessments and reports from this app on this device?" data-ar="وتقييماته وتقاريره من هذا التطبيق على الجهاز؟">وتقييماته وتقاريره من هذا التطبيق على الجهاز؟</span></p><div class="toolbar"><button type="button" data-close="deleteAccountDialog" data-en="Cancel" data-ar="إلغاء">إلغاء</button><button type="button" id="confirmDeleteAccount" data-en="Yes, delete" data-ar="نعم، حذف">نعم، حذف</button></div><p id="deleteAccountError" role="alert"></p></dialog>
   <div id="printArea" class="report-document"></div>
+  <script src="assets/icons.js"></script>
   <script src="assets/data.js"></script>
   <script src="assets/stimuli.js"></script>
   <script src="assets/review.js"></script>
@@ -51,6 +53,10 @@
   <script src="assets/manual.js"></script>
   <script src="assets/stimulus-data.js"></script>
   <script src="assets/stimulus-viewer.js"></script>
+  <script src="assets/examples-data.js"></script>
+  <script src="assets/games-data.js"></script>
+  <script src="assets/games.js" defer></script>
+  <script src="assets/games-more.js" defer></script>
   <script src="assets/barriers-data.js"></script>
   <script src="assets/transitions-data.js"></script>
   <script src="assets/task-analysis-data.js"></script>
@@ -68,6 +74,7 @@
   <script src="assets/accounts.js" defer></script>
   <script src="assets/parent-gate.js" defer></script>
   <script src="assets/app.js" defer></script>
+  <script src="assets/avatars.js" defer></script>
   <script src="assets/account-ui.js" defer></script>
   <script src="assets/install.js" defer></script>
 </body>

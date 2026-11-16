@@ -15,15 +15,15 @@ server.listen(0,'127.0.0.1',async()=>{
   await page.locator(`.barrier-open[data-barrier-edit="tr-${n}"]`).click();assert.ok(await page.locator('#itemBody .transition-guidance p').count());
   assert.equal(await page.locator('#itemBody [data-score="0"]').count(),0);assert.equal(await page.locator('#itemBody [data-score="0.5"]').count(),0);
   assert.equal(await page.locator('#itemBody [data-transition-score]').count(),5);assert.equal(await page.locator('#itemBody .transition-verify').count(),0);
-  if(n>2)await page.locator(`#itemBody [data-score="${1+n%5}"]`).click();else assert.equal(await page.locator('#itemBody .score-controls').count(),0);await page.locator('[data-close=itemDialog]').click();
+  if(n<=2)assert.match(await page.locator('#itemBody .derived-score-note').textContent(),/تلقائي/);await page.locator(`#itemBody [data-score="${1+n%5}"]`).click();if(n<=2){await page.locator('#itemBody [data-derived-mode=manual]').waitFor();}await page.locator('[data-close=itemDialog]').click();
  }
- assert.equal(await page.evaluate(()=>Object.keys(VBApp.snapshot().scores.transitions).length),16);
+ assert.equal(await page.evaluate(()=>Object.keys(VBApp.snapshot().scores.transitions).length),18);
  await page.locator('[data-transition-view=cards]').click();assert.equal(await page.locator('.transition-task').count(),18);
  await page.locator('[data-card-id="tr-3"] [data-clear-score]').click();assert.equal(await page.evaluate(()=>Object.hasOwn(VBApp.snapshot().scores.transitions,'tr-3')),false);
  await page.locator('#language').click();assert.equal(await page.locator('html').getAttribute('dir'),'ltr');
  await page.locator('[data-transition-notes]').click();assert.match(await page.locator('#barrierNotesBody').textContent(),/IEP team/);await page.screenshot({path:'/tmp/vbmapp-transition-notes.png'});await page.locator('#barrierNotesClose').click();
  await page.screenshot({path:'/tmp/vbmapp-transition-tasks.png',fullPage:true});
- await page.reload();await page.locator('nav [data-page=transitions]').click();assert.equal(await page.evaluate(()=>Object.keys(VBApp.snapshot().scores.transitions).length),15);
+ await page.reload();await page.locator('nav [data-page=transitions]').click();assert.equal(await page.evaluate(()=>Object.keys(VBApp.snapshot().scores.transitions).length),17);
  await page.locator('nav [data-page=report]').click();await page.locator('[data-assessment-action=finish]').click();await page.locator('[data-confirm-assessment]').click();await page.locator('[data-assessment-action=new]').click();await page.locator('[data-confirm-assessment]').click();await page.locator('nav [data-page=transitions]').click();assert.equal(await page.locator('.barrier-visit-key').count(),0);assert.equal(await page.evaluate(()=>Object.keys(VBApp.snapshot().scores.transitions).length),0);
  await page.locator('.barrier-open[data-barrier-edit="tr-4"]').click();assert.ok(await page.locator('#itemBody .previous-result').count());await page.locator('#itemBody [data-score="5"]').click();await page.locator('[data-close=itemDialog]').click();
  assert.equal(await page.locator('.barrier-chart').nth(3).locator('.barrier-column').nth(0).locator('.filled').count(),5);assert.equal(await page.locator('.barrier-chart').nth(3).locator('.current .filled').count(),5);

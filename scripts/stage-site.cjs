@@ -2,7 +2,7 @@
 // Copies the published files into output/pages for GitHub Pages.
 const fs=require('node:fs'),path=require('node:path'),cp=require('node:child_process');
 const root=path.resolve(__dirname,'..'),out=path.join(root,'output/pages');
-const omitted=new Set(['.github','tests','scripts','node_modules','output']),names=new Set(['.gitignore','AGENTS.md','package.json','package-lock.json','.DS_Store']);
+const omitted=new Set(['.github','tests','scripts','node_modules','output']),names=new Set(['.gitignore','AGENTS.md','CLAUDE.md','package.json','package-lock.json','.DS_Store']);
 fs.rmSync(out,{recursive:true,force:true});fs.mkdirSync(out,{recursive:true});
 let total=0;
 for(const file of cp.execFileSync('git',['ls-files','-z'],{cwd:root}).toString().split('\0').filter(Boolean)){
